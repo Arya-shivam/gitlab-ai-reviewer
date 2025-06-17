@@ -225,7 +225,8 @@ test_review_bot:
     GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
     GITLAB_PROJECT_ID: $CI_PROJECT_ID
     CI_MERGE_REQUEST_IID: $TEST_MR_IID
-    OPENAI_API_KEY: $OPENAI_API_KEY
+    DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
+    AI_PROVIDER: "deepseek"
     LOG_LEVEL: "debug"
   when: manual
   allow_failure: true
