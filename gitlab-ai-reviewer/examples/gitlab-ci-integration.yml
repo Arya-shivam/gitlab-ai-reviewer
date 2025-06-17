@@ -1,0 +1,210 @@
+# Example GitLab CI/CD integration for different project types
+
+# Basic integration - Add this to your existing .gitlab-ci.yml
+stages:
+  - test
+  - review
+  - deploy
+
+# AI Code Review Job
+ai_code_review:
+  stage: review
+  image: node:18-alpine
+  before_script:
+    - npm install -g gitlab-ai-reviewer
+  script:
+    - gitlab-ai-reviewer review
+  variables:
+    GITLAB_URL: $CI_SERVER_URL
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    GITLAB_PROJECT_ID: $CI_PROJECT_ID
+    OPENAI_API_KEY: $OPENAI_API_KEY
+  only:
+    - merge_requests
+  allow_failure: true
+
+---
+
+# Advanced integration with custom configuration
+ai_code_review_advanced:
+  stage: review
+  image: node:18-alpine
+  before_script:
+    - apk add --no-cache git
+    - git clone https://gitlab.com/your-org/gitlab-ai-reviewer.git /tmp/reviewer
+    - cd /tmp/reviewer && npm ci
+  script:
+    - cd /tmp/reviewer
+    - node src/index.js cli
+  variables:
+    # GitLab Configuration
+    GITLAB_URL: $CI_SERVER_URL
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    GITLAB_PROJECT_ID: $CI_PROJECT_ID
+    
+    # AI Configuration
+    OPENAI_API_KEY: $OPENAI_API_KEY
+    AI_MODEL: "gpt-4"
+    AI_TEMPERATURE: "0.2"
+    AI_MAX_TOKENS: "3000"
+    
+    # Review Configuration
+    ENABLE_SECURITY_CHECKS: "true"
+    ENABLE_PERFORMANCE_CHECKS: "true"
+    ENABLE_CODE_STYLE_CHECKS: "false"  # Disable style checks
+    MAX_DIFF_SIZE: "15000"
+    
+    # Language-specific configuration
+    REVIEW_LANGUAGES: "javascript,typescript,python,java"
+    SKIP_FILES: "package-lock.json,yarn.lock,*.min.js,dist/*,build/*"
+    
+    # Logging
+    LOG_LEVEL: "info"
+    NODE_ENV: "production"
+  only:
+    - merge_requests
+  except:
+    variables:
+      - $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^(main|master|develop)$/
+  when: always
+  allow_failure: true
+  timeout: 15 minutes
+  retry:
+    max: 2
+    when:
+      - api_failure
+      - runner_system_failure
+
+---
+
+# Integration for monorepo projects
+ai_review_frontend:
+  stage: review
+  image: node:18-alpine
+  script:
+    - cd frontend && gitlab-ai-reviewer review
+  variables:
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
+    REVIEW_LANGUAGES: "javascript,typescript,vue,react"
+    SKIP_FILES: "node_modules/*,dist/*,*.bundle.js"
+  only:
+    changes:
+      - frontend/**/*
+    refs:
+      - merge_requests
+
+ai_review_backend:
+  stage: review
+  image: node:18-alpine
+  script:
+    - cd backend && gitlab-ai-reviewer review
+  variables:
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
+    REVIEW_LANGUAGES: "python,java,go"
+    ENABLE_SECURITY_CHECKS: "true"
+    ENABLE_PERFORMANCE_CHECKS: "true"
+  only:
+    changes:
+      - backend/**/*
+    refs:
+      - merge_requests
+
+---
+
+# Integration with security scanning
+security_and_ai_review:
+  stage: review
+  image: node:18-alpine
+  before_script:
+    - apk add --no-cache python3 py3-pip
+    - pip3 install bandit safety
+  script:
+    # Run security scanners first
+    - bandit -r . -f json -o bandit-report.json || true
+    - safety check --json --output safety-report.json || true
+    
+    # Run AI review with security focus
+    - gitlab-ai-reviewer review
+  variables:
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
+    ENABLE_SECURITY_CHECKS: "true"
+    ENABLE_PERFORMANCE_CHECKS: "false"
+    ENABLE_CODE_STYLE_CHECKS: "false"
+    ENABLE_BUG_DETECTION: "true"
+  artifacts:
+    reports:
+      security:
+        - bandit-report.json
+        - safety-report.json
+    expire_in: 1 week
+  only:
+    - merge_requests
+
+---
+
+# Integration with quality gates
+quality_gate:
+  stage: review
+  image: node:18-alpine
+  script:
+    - gitlab-ai-reviewer review --fail-on-critical
+  variables:
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
+    FAIL_ON_CRITICAL_ISSUES: "true"
+    FAIL_ON_SECURITY_ISSUES: "true"
+  only:
+    - merge_requests
+  allow_failure: false  # Block merge if critical issues found
+
+---
+
+# Scheduled review for main branch
+scheduled_review:
+  stage: review
+  image: node:18-alpine
+  script:
+    - gitlab-ai-reviewer review-branch --branch=main --since="1 week ago"
+  variables:
+    GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
+    REVIEW_MODE: "comprehensive"
+  only:
+    - schedules
+  when: always
+
+---
+
+# Multi-environment deployment with reviews
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "Deploying to staging..."
+    # Deployment commands here
+  environment:
+    name: staging
+    url: https://staging.example.com
+  dependencies:
+    - ai_code_review
+  only:
+    - develop
+  when: manual
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploying to production..."
+    # Deployment commands here
+  environment:
+    name: production
+    url: https://example.com
+  dependencies:
+    - ai_code_review
+  only:
+    - main
+  when: manual
+  rules:
+    - if: '$AI_REVIEW_PASSED == "true"'  # Only deploy if AI review passed
