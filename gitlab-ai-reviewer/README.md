@@ -49,9 +49,9 @@ cp .env.example .env
 Required environment variables:
 ```env
 GITLAB_TOKEN=your_gitlab_access_token
-DEEPSEEK_API_KEY=your_deepseek_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
 GITLAB_PROJECT_ID=your_project_id
-AI_PROVIDER=deepseek
+AI_PROVIDER=openrouter
 ```
 
 ### 3. Test Locally
@@ -69,7 +69,7 @@ CI_MERGE_REQUEST_IID=123 npm start cli
 Add the `.gitlab-ci.yml` to your project and configure these GitLab CI/CD variables:
 
 - `GITLAB_ACCESS_TOKEN`: GitLab access token with API permissions
-- `DEEPSEEK_API_KEY`: DeepSeek API key for code review access
+- `OPENROUTER_API_KEY`: OpenRouter API key for Grok access (FREE!)
 
 ## 📋 Configuration
 
@@ -78,10 +78,10 @@ Add the `.gitlab-ci.yml` to your project and configure these GitLab CI/CD variab
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `GITLAB_TOKEN` | GitLab access token | - | ✅ |
-| `DEEPSEEK_API_KEY` | DeepSeek API key | - | ✅ |
-| `AI_PROVIDER` | AI provider to use | `deepseek` | ❌ |
+| `OPENROUTER_API_KEY` | OpenRouter API key | - | ✅ |
+| `AI_PROVIDER` | AI provider to use | `openrouter` | ❌ |
 | `GITLAB_URL` | GitLab instance URL | `https://gitlab.com` | ❌ |
-| `DEEPSEEK_MODEL` | DeepSeek model to use | `deepseek-coder` | ❌ |
+| `OPENROUTER_MODEL` | OpenRouter model to use | `x-ai/grok-3-beta` | ❌ |
 | `MAX_DIFF_SIZE` | Max diff size to review | `10000` | ❌ |
 | `LOG_LEVEL` | Logging level | `info` | ❌ |
 

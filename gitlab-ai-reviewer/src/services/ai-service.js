@@ -21,6 +21,18 @@ class AIService {
         });
         break;
 
+      case 'openrouter':
+        // OpenRouter uses OpenAI-compatible API
+        this.client = new OpenAI({
+          apiKey: config.ai.openrouter.apiKey,
+          baseURL: config.ai.openrouter.baseURL || 'https://openrouter.ai/api/v1',
+          defaultHeaders: {
+            'HTTP-Referer': config.ai.openrouter.siteUrl || 'https://gitlab-ai-reviewer.com',
+            'X-Title': config.ai.openrouter.siteName || 'GitLab AI Reviewer',
+          },
+        });
+        break;
+
       case 'deepseek':
         // DeepSeek uses OpenAI-compatible API
         this.client = new OpenAI({
@@ -105,6 +117,12 @@ class AIService {
           model: config.ai.openai.model,
           maxTokens: config.ai.openai.maxTokens,
           temperature: config.ai.openai.temperature,
+        };
+      case 'openrouter':
+        return {
+          model: config.ai.openrouter.model,
+          maxTokens: config.ai.openrouter.maxTokens,
+          temperature: config.ai.openrouter.temperature,
         };
       case 'deepseek':
         return {

@@ -68,10 +68,10 @@ ai_code_review:
     GITLAB_URL: $CI_SERVER_URL
     GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
     GITLAB_PROJECT_ID: $CI_PROJECT_ID
-    DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
-    AI_PROVIDER: "deepseek"
-    DEEPSEEK_MODEL: "deepseek-coder"
-    AI_MAX_TOKENS: "4000"
+    OPENROUTER_API_KEY: $OPENROUTER_API_KEY
+    AI_PROVIDER: "openrouter"
+    OPENROUTER_MODEL: "x-ai/grok-3-beta"
+    AI_MAX_TOKENS: "1500"
     AI_TEMPERATURE: "0.1"
     LOG_LEVEL: "info"
     NODE_ENV: "production"
@@ -122,8 +122,8 @@ deploy_staging:
           "config": {
             "GITLAB_URL": "'$CI_SERVER_URL'",
             "GITLAB_TOKEN": "'$GITLAB_ACCESS_TOKEN'",
-            "DEEPSEEK_API_KEY": "'$DEEPSEEK_API_KEY'",
-            "AI_PROVIDER": "deepseek",
+            "OPENROUTER_API_KEY": "'$OPENROUTER_API_KEY'",
+            "AI_PROVIDER": "openrouter",
             "PORT": "3000",
             "NODE_ENV": "staging"
           }
@@ -154,8 +154,8 @@ deploy_production:
           "config": {
             "GITLAB_URL": "'$CI_SERVER_URL'",
             "GITLAB_TOKEN": "'$GITLAB_ACCESS_TOKEN'",
-            "DEEPSEEK_API_KEY": "'$DEEPSEEK_API_KEY'",
-            "AI_PROVIDER": "deepseek",
+            "OPENROUTER_API_KEY": "'$OPENROUTER_API_KEY'",
+            "AI_PROVIDER": "openrouter",
             "PORT": "3000",
             "NODE_ENV": "production"
           }
@@ -225,8 +225,8 @@ test_review_bot:
     GITLAB_TOKEN: $GITLAB_ACCESS_TOKEN
     GITLAB_PROJECT_ID: $CI_PROJECT_ID
     CI_MERGE_REQUEST_IID: $TEST_MR_IID
-    DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
-    AI_PROVIDER: "deepseek"
+    OPENROUTER_API_KEY: $OPENROUTER_API_KEY
+    AI_PROVIDER: "openrouter"
     LOG_LEVEL: "debug"
   when: manual
   allow_failure: true

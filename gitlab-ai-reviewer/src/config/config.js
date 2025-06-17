@@ -13,12 +13,21 @@ const config = {
 
   // AI Service Configuration
   ai: {
-    provider: process.env.AI_PROVIDER || 'deepseek',
+    provider: process.env.AI_PROVIDER || 'openrouter',
     openai: {
       apiKey: process.env.OPENAI_API_KEY,
       model: process.env.AI_MODEL || 'gpt-4',
       maxTokens: parseInt(process.env.AI_MAX_TOKENS) || 2000,
       temperature: parseFloat(process.env.AI_TEMPERATURE) || 0.3,
+    },
+    openrouter: {
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
+      model: process.env.OPENROUTER_MODEL || 'x-ai/grok-3-beta',
+      maxTokens: parseInt(process.env.AI_MAX_TOKENS) || 1500,
+      temperature: parseFloat(process.env.AI_TEMPERATURE) || 0.1,
+      siteUrl: process.env.OPENROUTER_SITE_URL || 'https://gitlab-ai-reviewer.com',
+      siteName: process.env.OPENROUTER_SITE_NAME || 'GitLab AI Reviewer',
     },
     deepseek: {
       apiKey: process.env.DEEPSEEK_API_KEY,
@@ -123,6 +132,8 @@ function validateConfig() {
   // Add AI provider specific requirements
   if (config.ai.provider === 'openai') {
     required.push('OPENAI_API_KEY');
+  } else if (config.ai.provider === 'openrouter') {
+    required.push('OPENROUTER_API_KEY');
   } else if (config.ai.provider === 'deepseek') {
     required.push('DEEPSEEK_API_KEY');
   } else if (config.ai.provider === 'anthropic') {
@@ -138,6 +149,10 @@ function validateConfig() {
   // Validate AI provider configuration
   if (config.ai.provider === 'openai' && !config.ai.openai.apiKey) {
     throw new Error('OpenAI API key is required when using OpenAI provider');
+  }
+
+  if (config.ai.provider === 'openrouter' && !config.ai.openrouter.apiKey) {
+    throw new Error('OpenRouter API key is required when using OpenRouter provider');
   }
 
   if (config.ai.provider === 'deepseek' && !config.ai.deepseek.apiKey) {
